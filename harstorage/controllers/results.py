@@ -6,6 +6,7 @@ import time
 import re
 import functools
 import platform
+import urllib2
 
 from pylons import request, response, tmpl_context as c
 from pylons import config
@@ -346,7 +347,7 @@ class ResultsController(BaseController):
             
             # Evaluate Page Speed scores
             if config["app_conf"]["ps_enabled"] == "true":
-                scores = self._get_pagespeed_scores(har.har)
+                scores = self._get_pagespeed_scores(har)
             else:
                 scores = dict([("Total Score", 100)])
             
@@ -394,42 +395,53 @@ class ResultsController(BaseController):
         #Store HAR for Page Speed binary
         hashname = hashlib.md5().hexdigest()
         temp_store = config["app_conf"]["temp_store"]
-        filename = os.path.join(temp_store, hashname)
+        api_key = config["app_conf"]["pagespeed_api_key"]
+        #filename = os.path.join(temp_store, hashname)
 
-        with open(filename, "w") as file:
-            file.write(json.dumps(har))
+        #with open(filename, "w") as file:
+        #    file.write(json.dumps(har))
 
         # STDOUT,STDERR
-        os_type = platform.system()
+        #os_type = platform.system()
 
-        if os_type == "Linux":
-            std_out = " > /dev/null 2>&1"
-        elif os_type == "Windows":
-            std_out = " > NUL 2>&1"
-        else:
-            std_out = ""
+        #if os_type == "Linux":
+        #    std_out = " > /dev/null 2>&1"
+        #elif os_type == "Windows":
+        #    std_out = " > NUL 2>&1"
+        #else:
+        #    std_out = ""
 
         # Run pagespeed_bin
-        bin_store = config["app_conf"]["bin_store"]
-        pagespeed_bin = os.path.join(bin_store, "pagespeed_bin")
+        #bin_store = config["app_conf"]["bin_store"]
+        #pagespeed_bin = os.path.join(bin_store, "pagespeed_bin")
 
-        outfile = filename + ".out"
+        #outfile = filename + ".out"
 
-        os.system(pagespeed_bin + \
-            " -input_file " + filename + \
-            " -output_format formatted_json" + \
-            " -output_file " + outfile + \
-            std_out)
+        #os.system(pagespeed_bin + \
+        #    " -input_file " + filename + \
+        #    " -output_format formatted_json" + \
+        #    " -output_file " + outfile + \
+        #    std_out)
 
         # Output report (JSON)
-        with open(outfile, "r") as file:
-            output = json.loads(file.read())
-
-        # Final scores
+        #with open(outfile, "r") as file:
+        #    output = json.loads(file.read())
         scores = dict()
-        scores["Total Score"] = int(output["score"])
-        for rule in output["rule_results"]:
-            scores[rule["localized_rule_name"]] = int(rule["rule_score"])
+        
+        try:
+
+            f = urllib2.urlopen('https://www.googleapis.com/pagespeedonline/v1/runPagespeed?url=%s&key=%s' % (har.url,api_key))
+            
+            pagespeed_response = f.read()
+            output = json.loads(pagespeed_response)
+    
+            # Final scores
+            
+            scores["Total Score"] = int(output["score"])
+            for rule in output["ruleResults"]:
+                scores[rule["localizedRuleName"]] = int(rule["ruleScore"])
+        except:
+            scores["Total Score"] = 100
 
         return scores
 
