@@ -401,36 +401,6 @@ class ResultsController(BaseController):
         
         logging.info(api_key)
         
-        #filename = os.path.join(temp_store, hashname)
-
-        #with open(filename, "w") as file:
-        #    file.write(json.dumps(har))
-
-        # STDOUT,STDERR
-        #os_type = platform.system()
-
-        #if os_type == "Linux":
-        #    std_out = " > /dev/null 2>&1"
-        #elif os_type == "Windows":
-        #    std_out = " > NUL 2>&1"
-        #else:
-        #    std_out = ""
-
-        # Run pagespeed_bin
-        #bin_store = config["app_conf"]["bin_store"]
-        #pagespeed_bin = os.path.join(bin_store, "pagespeed_bin")
-
-        #outfile = filename + ".out"
-
-        #os.system(pagespeed_bin + \
-        #    " -input_file " + filename + \
-        #    " -output_format formatted_json" + \
-        #    " -output_file " + outfile + \
-        #    std_out)
-
-        # Output report (JSON)
-        #with open(outfile, "r") as file:
-        #    output = json.loads(file.read())
         scores = dict()
         
         try:
@@ -454,9 +424,12 @@ class ResultsController(BaseController):
             for rule in output["formattedResults"]["ruleResults"]:
                 
                 logging.info("next rule = %s" % rule)
-                logging.info("next rule = %s" % output["formattedResults"]["ruleResults"][rule])
                 
-                scores[output["formattedResults"]["ruleResults"][rule]["localizedRuleName"]] = int(output["formattedResults"]["ruleResults"][rule]["ruleScore"])
+                rule_value = output["formattedResults"]["ruleResults"][rule]
+                
+                logging.info("next rule_value = %s" % rule_value)
+                
+                scores[rule_value["localizedRuleName"]] = int(rule_value["ruleScore"])
         except:
             logging.error("failed getting page speed details remotely")
             #scores["Total Score"] = 100
