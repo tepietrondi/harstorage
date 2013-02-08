@@ -1,0 +1,10 @@
+
+.DS_Store
+*.pyc
+
+data/*
+build/*
+dist/*
+
+
+production.ini
