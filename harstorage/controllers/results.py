@@ -395,16 +395,17 @@ class ResultsController(BaseController):
 
     def _get_pagespeed_scores(self, har):
         #Store HAR for Page Speed binary
-        hashname = hashlib.md5().hexdigest()
-        temp_store = config["app_conf"]["temp_store"]
+        
         api_key = config["app_conf"]["pagespeed_api_key"]
         
-        logging.info(api_key)
+        logging.info("api key = %s" % api_key)
         
+        logging.info("har url = %s" % har.url)
+                
         scores = dict()
         
         try:
-
+            
             f = urllib2.urlopen('https://www.googleapis.com/pagespeedonline/v1/runPagespeed?url=%s&key=%s' % (har.url,api_key))
             
             pagespeed_response = f.read()
