@@ -8,3 +8,5 @@ dist/*
 
 
 production.ini
+
+production.log

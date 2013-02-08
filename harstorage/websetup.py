@@ -1,5 +1,7 @@
 import logging
 
+logging.basicConfig(level=logging.DEBUG)
+
 import pylons.test
 
 from harstorage.config.environment import load_environment

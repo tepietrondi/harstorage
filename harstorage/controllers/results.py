@@ -7,6 +7,8 @@ import re
 import functools
 import platform
 import urllib2
+import logging
+
 
 from pylons import request, response, tmpl_context as c
 from pylons import config
@@ -396,6 +398,9 @@ class ResultsController(BaseController):
         hashname = hashlib.md5().hexdigest()
         temp_store = config["app_conf"]["temp_store"]
         api_key = config["app_conf"]["pagespeed_api_key"]
+        
+        logging.info(api_key)
+        
         #filename = os.path.join(temp_store, hashname)
 
         #with open(filename, "w") as file:
@@ -433,15 +438,28 @@ class ResultsController(BaseController):
             f = urllib2.urlopen('https://www.googleapis.com/pagespeedonline/v1/runPagespeed?url=%s&key=%s' % (har.url,api_key))
             
             pagespeed_response = f.read()
+            
+            #logging.info("pagespeed_response = %s " % pagespeed_response)
+            
             output = json.loads(pagespeed_response)
+            
+            #logging.info("output = %s " % output)
     
             # Final scores
             
             scores["Total Score"] = int(output["score"])
-            for rule in output["ruleResults"]:
-                scores[rule["localizedRuleName"]] = int(rule["ruleScore"])
+            
+            logging.info(output["formattedResults"]["ruleResults"])
+            
+            for rule in output["formattedResults"]["ruleResults"]:
+                
+                logging.info("next rule = %s" % rule)
+                logging.info("next rule = %s" % output["formattedResults"]["ruleResults"][rule])
+                
+                scores[output["formattedResults"]["ruleResults"][rule]["localizedRuleName"]] = int(output["formattedResults"]["ruleResults"][rule]["ruleScore"])
         except:
-            scores["Total Score"] = 100
+            logging.error("failed getting page speed details remotely")
+            #scores["Total Score"] = 100
 
         return scores
 
