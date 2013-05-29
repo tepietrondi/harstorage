@@ -179,7 +179,10 @@ class ResultsController(BaseController):
                 if metric != "ps_scores":
                     point = str(result[metric])
                 else:
-                    point = str(result[metric]["Total Score"])
+                    if result[metric].has_key("Total Score"):
+                        point = str(result[metric]["Total Score"])
+                    else:
+                        point = "n/a"
                 if point == "n/a":
                     exclude.add(metric)
                 data[index] += point + "#"
